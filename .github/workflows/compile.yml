@@ -1,8 +1,8 @@
 name: Compile pgvector
 
 on:
-  # schedule:
-  #   - cron: "0 0 * * *" # Run daily at midnight UTC
+  schedule:
+    - cron: "0 0 * * *" # Run daily at midnight UTC
   push:
     paths:
       - ".github/workflows/compile.yml"
@@ -23,16 +23,14 @@ jobs:
     steps:
       - name: Check for new release
         id: check_release
-        # latest_tag=$(curl -s "https://api.github.com/repos/${{ env.PGVECTOR_REPO }}/tags" | jq -r '.[0].name')
-        # current_version=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.body' | grep -oP 'pgvector v\K[0-9.]+')
         run: |
-          latest_tag="v0.8.0"
+          latest_tag=$(curl -s "https://api.github.com/repos/${{ env.PGVECTOR_REPO }}/tags" | jq -r '.[0].name')
           echo "Latest tag: ${latest_tag#v}"
           latest_version=${latest_tag#v}
           echo "version=$latest_version" >> $GITHUB_OUTPUT
 
           # Get the current version from the latest release of this repo
-          current_version="0.0.0"
+          current_version=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.body' | grep -oP 'pgvector v\K[0-9.]+')
           echo "Current version: $current_version"
 
           if [[ "$latest_version" != "$current_version" ]]; then
