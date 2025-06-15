@@ -15,33 +15,35 @@ env:
   PGVECTOR_REPO: "pgvector/pgvector"
 
 jobs:
-  # check_version:
-  #   runs-on: ubuntu-latest
-  #   outputs:
-  #     new_version: ${{ steps.check_release.outputs.new_version }}
-  #     version: ${{ steps.check_release.outputs.version }}
-  #   steps:
-  #     - name: Check for new release
-  #       id: check_release
-  #       run: |
-  #         latest_tag=$(curl -s "https://api.github.com/repos/${{ env.PGVECTOR_REPO }}/tags" | jq -r '.[0].name')
-  #         echo "Latest tag: ${latest_tag#v}"
-  #         latest_version=${latest_tag#v}
-  #         echo "version=$latest_version" >> $GITHUB_OUTPUT
+  check_version:
+    runs-on: ubuntu-latest
+    outputs:
+      new_version: ${{ steps.check_release.outputs.new_version }}
+      version: ${{ steps.check_release.outputs.version }}
+    steps:
+      - name: Check for new release
+        id: check_release
+        # latest_tag=$(curl -s "https://api.github.com/repos/${{ env.PGVECTOR_REPO }}/tags" | jq -r '.[0].name')
+        # current_version=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.body' | grep -oP 'pgvector v\K[0-9.]+')
+        run: |
+          latest_tag="v0.8.0"
+          echo "Latest tag: ${latest_tag#v}"
+          latest_version=${latest_tag#v}
+          echo "version=$latest_version" >> $GITHUB_OUTPUT
 
-  #         # Get the current version from the latest release of this repo
-  #         current_version=$(curl -s "https://api.github.com/repos/${{ github.repository }}/releases/latest" | jq -r '.body' | grep -oP 'pgvector v\K[0-9.]+')
-  #         echo "Current version: $current_version"
+          # Get the current version from the latest release of this repo
+          current_version="0.0.0"
+          echo "Current version: $current_version"
 
-  #         if [[ "$latest_version" != "$current_version" ]]; then
-  #           echo "new_version=true" >> $GITHUB_OUTPUT
-  #         else
-  #           echo "new_version=false" >> $GITHUB_OUTPUT
-  #         fi
+          if [[ "$latest_version" != "$current_version" ]]; then
+            echo "new_version=true" >> $GITHUB_OUTPUT
+          else
+            echo "new_version=false" >> $GITHUB_OUTPUT
+          fi
 
   build:
-    # needs: check_version
-    # if: needs.check_version.outputs.new_version == 'true' || github.event_name != 'schedule'
+    needs: check_version
+    if: needs.check_version.outputs.new_version == 'true' || github.event_name != 'schedule'
     runs-on: ${{ matrix.os }}
     strategy:
       matrix:
